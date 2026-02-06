@@ -51,6 +51,10 @@ h1 {
   line-height: 2;
 }
 
+.placeholders .line {
+  min-height: 1.6em;
+}
+
 .row {
   display: flex;
   justify-content: space-between;
@@ -59,10 +63,11 @@ h1 {
   border-radius: 12px;
   padding: .7rem 1rem;
   margin-bottom: .8rem;
+  gap: .8rem;
 }
 
 .row span {
-  font-size: 1rem;
+  flex: 1;
 }
 
 .row button {
@@ -71,6 +76,28 @@ h1 {
   border-radius: 999px;
   padding: .2rem .8rem;
   cursor: pointer;
+}
+
+.input-row {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: .6rem .8rem;
+  margin: .6rem 0 1rem;
+}
+
+.input-row label {
+  display: block;
+  font-size: .85rem;
+  color: #666;
+  margin-bottom: .3rem;
+}
+
+.input-row input {
+  width: 100%;
+  font-size: 1rem;
+  padding: .55rem .7rem;
+  border: 1px solid #ddd;
+  border-radius: 10px;
 }
 
 hr {
@@ -97,6 +124,7 @@ hr {
   writing-mode: vertical-rl;
   text-align: center;
   font-size: .9rem;
+  min-height: 140px;
 }
 </style>
 </head>
@@ -110,24 +138,41 @@ hr {
   </div>
 
   <div class="placeholders">
-    <div id="first">（初句）</div>
-    <div id="middle">（中句）</div>
-    <div id="last">（結句）</div>
+    <div class="line" id="first">（初句）</div>
+    <div class="line" id="middle">（中句）</div>
+    <div class="line" id="last">（結句）</div>
   </div>
 
+  <!-- 初句：選ぶ -->
   <div class="row">
-    <span id="opt1"></span>
-    <button onclick="choose('first')">選ぶ</button>
+    <span id="optFirst"></span>
+    <button onclick="chooseFirst()">選ぶ</button>
   </div>
 
-  <div class="row">
-    <span id="opt2"></span>
-    <button onclick="choose('middle')">選ぶ</button>
+  <!-- 中句：入力 -->
+  <div class="input-row">
+    <label>中句（入力）</label>
+    <input id="middleInput" placeholder="ここに中句を書く" oninput="syncMiddle()">
   </div>
 
+  <!-- 結句：3候補 -->
   <div class="row">
-    <span id="opt3"></span>
-    <button onclick="choose('last')">選ぶ</button>
+    <span id="optLast1"></span>
+    <button onclick="chooseLast(optLast1.textContent)">選ぶ</button>
+  </div>
+  <div class="row">
+    <span id="optLast2"></span>
+    <button onclick="chooseLast(optLast2.textContent)">選ぶ</button>
+  </div>
+  <div class="row">
+    <span id="optLast3"></span>
+    <button onclick="chooseLast(optLast3.textContent)">選ぶ</button>
+  </div>
+
+  <!-- 結句：入力 -->
+  <div class="input-row">
+    <label>結句（入力）</label>
+    <input id="lastInput" placeholder="自分で結句を書く" oninput="syncLastInput()">
   </div>
 
   <hr>
@@ -142,55 +187,67 @@ hr {
 
 <script>
 const trad = {
-  spring: ["春雷や","花の雨","若葉揺れ"],
-  summer: ["夏雲や","蝉しぐれ","川光る"],
-  autumn: ["秋風や","虫の声","月高し"],
-  winter: ["初霜や","雪しんしん","冬の星"]
-};
-
-const modern = {
-  spring: ["改札で","通知鳴る","画面越し"],
-  summer: ["冷房の","白い午後","ガラス越し"],
-  autumn: ["終電で","無人駅","イヤホン外す"],
-  winter: ["深夜便","白い壁","息白し"]
+  spring:["春雷や","花の雨","若葉揺れ"],
+  summer:["夏雲や","蝉しぐれ","川光る"],
+  autumn:["秋風や","虫の声","月高し"],
+  winter:["初霜や","雪しんしん","冬の星"]
 };
 
 const ends = {
-  spring: ["まだ遠い","揺れている","黙ってる"],
-  summer: ["少し待つ","目を閉じる","風が来る"],
-  autumn: ["何も言わず","そのままで","歩き出す"],
-  winter: ["朝になる","音もなく","消えてゆく"]
+  spring:["まだ遠い","揺れている","黙ってる"],
+  summer:["少し待つ","目を閉じる","風が来る"],
+  autumn:["何も言わず","そのままで","歩き出す"],
+  winter:["朝になる","音もなく","消えてゆく"]
 };
 
 function pick(obj){
-  const seasons = Object.keys(obj);
-  const s = seasons[Math.floor(Math.random()*seasons.length)];
-  const arr = obj[s];
-  return arr[Math.floor(Math.random()*arr.length)];
+  const ks = Object.keys(obj);
+  const k = ks[Math.floor(Math.random()*ks.length)];
+  const a = obj[k];
+  return a[Math.floor(Math.random()*a.length)];
 }
 
 function refresh(){
-  opt1.textContent = pick(trad);
-  opt2.textContent = pick(modern);
-  opt3.textContent = pick(ends);
+  optFirst.textContent = pick(trad);
+  optLast1.textContent = pick(ends);
+  optLast2.textContent = pick(ends);
+  optLast3.textContent = pick(ends);
 }
 
-function choose(part){
-  if(part==="first")  first.textContent  = opt1.textContent;
-  if(part==="middle") middle.textContent = opt2.textContent;
-  if(part==="last"){
-    last.textContent = opt3.textContent;
-    saveHistory();
-  }
+function syncMiddle(){
+  middle.textContent = middleInput.value || "（中句）";
+}
+
+function syncLastInput(){
+  last.textContent = lastInput.value || "（結句）";
+  trySave();
+}
+
+function chooseFirst(){
+  first.textContent = optFirst.textContent;
   refresh();
+  trySave();
 }
 
-function saveHistory(){
-  h2.textContent = h1.textContent;
-  h1.textContent =
-    first.textContent + "　" +
-    middle.textContent + "　" +
-    last.textContent;
+function chooseLast(text){
+  last.textContent = text;
+  lastInput.value = "";
+  refresh();
+  trySave();
+}
+
+function trySave(){
+  if (
+    first.textContent !== "（初句）" &&
+    middle.textContent !== "（中句）" &&
+    last.textContent !== "（結句）"
+  ) {
+    h2.textContent = h1.textContent;
+    h1.textContent =
+      first.textContent + "　" +
+      middle.textContent + "　" +
+      last.textContent;
+  }
 }
 
 refresh();
