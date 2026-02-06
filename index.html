@@ -12,7 +12,7 @@
         
         /* ヘッダー */
         .top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-        .panda { width: 68px; height: 68px; object-fit: contain; }
+        .panda { width: 72px; height: 72px; object-fit: contain; }
         .logo-text { font-size: 1.3rem; font-weight: bold; letter-spacing: 0.05em; }
         .season-badge { font-size: 0.75rem; background: #f0f0f0; padding: 4px 10px; border-radius: 12px; color: #777; font-weight: normal; }
         
@@ -71,7 +71,8 @@
 <div class="wrapper">
     <div class="card">
         <div class="top">
-            <img class="panda" src="https://45jp.net/wp-content/uploads/2020/05/warau_panda.png" alt="笑うパンダ">
+            <!-- 指定されたリンクの画像に変更しました -->
+            <img class="panda" src="https://45jp.net/wp-content/uploads/2020/05/warau_panda.png" alt="パンダ" onerror="this.src='https://img.icons8.com/emoji/96/000000/panda-emoji.png'">
             <div>
                 <span class="logo-text">パンダ俳句 β</span><br>
                 <span id="currentSeasonLabel" class="season-badge">読み込み中...</span>
