@@ -1,253 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>パンダ俳句 β（作品一覧・修正版）</title>
-<style>
-body{margin:0;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:#fafafa;color:#111}
-.wrap{max-width:520px;margin:0 auto;min-height:100vh;padding:14px;box-sizing:border-box}
-.card{background:#fff;border:1px solid #e6e6e6;border-radius:16px;padding:14px;box-shadow:0 1px 8px rgba(0,0,0,.04)}
-.top{display:flex;gap:12px;align-items:center}
-.panda{width:80px;height:80px;object-fit:contain}
-.haiku{text-align:center;margin:18px 0;font-family:"Hiragino Mincho ProN","Yu Mincho",serif}
-.line{font-size:22px;line-height:1.7}
-.dim{color:#aaa}
-.controls{display:flex;flex-direction:column;gap:10px}
-button{border:1px solid #ddd;background:#fff;border-radius:12px;padding:10px;font-size:16px}
-.primary{background:#111;color:#fff;border:0}
-.opt{display:flex;justify-content:space-between;align-items:center;border:1px solid #ddd;border-radius:12px;padding:10px}
-.hidden{display:none}
-.gallery{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.hcard{
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-  font-size:18px;
-  line-height:1.8;
-  padding:12px;
-  border:1px solid #e6e6e6;
-  border-radius:12px;
-  background:#fff;
-}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-small{color:#666}
-</style>
+  <meta charset="UTF-8">
+  <title>パンダ俳句 β</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      background: #f6f6f6;
+      margin: 0;
+      padding: 2rem;
+    }
+    .card {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+    .haiku {
+      margin: 2rem 0;
+      line-height: 2;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: .6rem 1.4rem;
+      font-size: 1rem;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: .85;
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-<div class="card">
-<div class="top">
-<img class="panda" src="https://45jp.net/wp-content/uploads/2020/05/warau_panda.png">
-<strong>パンダ俳句 β</strong>
-</div>
+  <div class="card">
+    <h1>パンダ俳句 β</h1>
 
-<div class="haiku">
-<div id="l1" class="line dim">（初句）</div>
-<div id="l2" class="line dim">（中句）</div>
-<div id="l3" class="line dim">（結句）</div>
-</div>
+    <div class="haiku">
+      <div id="first">（初句）</div>
+      <div id="middle">（中句）</div>
+      <div id="last">（結句）</div>
+    </div>
 
-<div class="controls" id="stageOpen"></div>
+    <button onclick="generate()">選ぶ</button>
+  </div>
 
-<div class="controls hidden" id="stageMiddle">
-<input id="middle" placeholder="中句を書く">
-<button class="primary" onclick="sendMiddle()">送る</button>
-</div>
+  <script>
+    const trad = {
+      spring: ["春雷や", "若葉揺れ", "花の雨"],
+      summer: ["夏雲や", "蝉しぐれ", "川光る"],
+      autumn: ["秋風や", "虫の声", "月高し"],
+      winter: ["初霜や", "雪しんしん", "冬の星"]
+    };
 
-<div class="controls hidden" id="stageEnd"></div>
+    const modern = {
+      spring: ["改札で", "画面越し", "通知鳴る"],
+      summer: ["冷房の", "ガラス越し", "白い午後"],
+      autumn: ["終電で", "無人駅", "イヤホン外す"],
+      winter: ["深夜便", "白い壁", "息白し"]
+    };
 
-<div class="controls hidden" id="stageDone">
-<div class="actions">
-<button onclick="saveHaiku()">保存して次へ</button>
-<button onclick="restart()">破棄して次へ</button>
-</div>
-</div>
+    const ends = {
+      spring: ["まだ遠い", "揺れている", "黙ってる"],
+      summer: ["少し待つ", "目を閉じる", "風が来る"],
+      autumn: ["何も言わず", "そのままで", "歩き出す"],
+      winter: ["朝になる", "音もなく", "消えてゆく"]
+    };
 
-<hr style="margin:18px 0">
+    function pick(obj) {
+      const keys = Object.keys(obj);
+      const k = keys[Math.floor(Math.random() * keys.length)];
+      const arr = obj[k];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
 
-<h3>これまでの作品</h3>
-<div id="gallery" class="gallery"></div>
+    function generate() {
+      document.getElementById("first").textContent  = pick(trad);
+      document.getElementById("middle").textContent = pick(modern);
+      document.getElementById("last").textContent   = pick(ends);
+    }
 
-<div class="actions">
-<button onclick="copyAll()">すべてコピー</button>
-<button onclick="downloadAll()">すべてダウンロード</button>
-</div>
-
-<small>※この端末内（localStorage）にのみ保存されます</small>
-</div>
-</div>
-
-<script>
-const trad = {
-  spring: ["残雪や","春雷や"],
-  summer: [],
-  autumn: ["秋風や"],
-  winter: ["冬星や","初霜や"]
-};
-
-const modern = {
-  spring: ["花粉や"],
-  summer: ["冷房や","帰省や"],
-  autumn: [],
-  winter: ["受験や","終電や"]
-};
-
-const ends = ["まだ温い","無人駅","ほどけゆく","白い壁","黙ってる","揺れている"];
-
-  // 今日の季節を二十四節気で決める
-function getSeasonBySekki() {
-  const today = new Date();
-  const year = today.getFullYear();
-
-  const risshun = new Date(year, 1, 4);  // 2月4日
-  const rikka   = new Date(year, 4, 5);  // 5月5日
-  const risshuu = new Date(year, 7, 7);  // 8月7日
-  const rittou  = new Date(year,10, 7);  // 11月7日
-
-  if (today >= risshun && today < rikka) return "spring";
-  if (today >= rikka   && today < risshuu) return "summer";
-  if (today >= risshuu && today < rittou) return "autumn";
-  return "winter";
-}
-
-  // すでに使った言葉を覚えるしくみ
-function shuffle(array) {
-  const a = [...array];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function drawWord(key, source) {
-  let deck = JSON.parse(localStorage.getItem(key));
-
-  // まだ山札がなければ作る
-  if (!deck || deck.length === 0) {
-    deck = shuffle(source);
-  }
-
-  const word = deck.shift(); // 1枚引く
-  localStorage.setItem(key, JSON.stringify(deck));
-  return word;
-}
-const KEY="panda_haiku_gallery";
-
-let l1=document.getElementById("l1");
-let l2=document.getElementById("l2");
-let l3=document.getElementById("l3");
-let gallery=document.getElementById("gallery");
-
-function rand(a){return a[Math.floor(Math.random()*a.length)]}
-function shuffle(a){
-  const b=[...a];
-  for(let i=b.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [b[i],b[j]]=[b[j],b[i]];
-  }
-  return b;
-}
-
-function start(){
-resetLines();
-document.getElementById("stageDone").classList.add("hidden");
-const box=document.getElementById("stageOpen");
-box.innerHTML="";
-const season = getSeasonBySekki();
-
-const A = drawWord("deck_trad", trad[season]);
-const B = drawWord("deck_modern", modern[season]);
-
-[A,B].forEach(t=>{
-const d=document.createElement("div");
-d.className="opt";
-d.innerHTML=`${t} <button>選ぶ</button>`;
-d.querySelector("button").onclick=()=>chooseOpen(t);
-box.appendChild(d);
-});
-}
-
-function resetLines(){
-l1.textContent="（初句）";l1.classList.add("dim");
-l2.textContent="（中句）";l2.classList.add("dim");
-l3.textContent="（結句）";l3.classList.add("dim");
-document.getElementById("stageOpen").classList.remove("hidden");
-document.getElementById("stageMiddle").classList.add("hidden");
-document.getElementById("stageEnd").classList.add("hidden");
-}
-
-function chooseOpen(t){
-l1.textContent=t;l1.classList.remove("dim");
-document.getElementById("stageOpen").classList.add("hidden");
-document.getElementById("stageMiddle").classList.remove("hidden");
-}
-
-function sendMiddle(){
-const m=document.getElementById("middle").value.trim();
-if(!m)return;
-l2.textContent=m;l2.classList.remove("dim");
-document.getElementById("stageMiddle").classList.add("hidden");
-const box=document.getElementById("stageEnd");
-box.classList.remove("hidden");
-box.innerHTML="";
-shuffle(ends).slice(0,3).forEach(e=>{
-const d=document.createElement("div");
-d.className="opt";
-d.innerHTML=`${e} <button>選ぶ</button>`;
-d.querySelector("button").onclick=()=>finalize(e);
-box.appendChild(d);
-});
-}
-
-function finalize(e){
-l3.textContent=e;l3.classList.remove("dim");
-document.getElementById("stageEnd").classList.add("hidden");
-document.getElementById("stageDone").classList.remove("hidden");
-}
-
-function saveHaiku(){
-const arr=JSON.parse(localStorage.getItem(KEY)||"[]");
-arr.push(l1.textContent+"\n"+l2.textContent+"\n"+l3.textContent);
-localStorage.setItem(KEY,JSON.stringify(arr));
-renderGallery();
-restart();
-}
-
-function restart(){
-document.getElementById("middle").value="";
-start();
-}
-
-function renderGallery(){
-gallery.innerHTML="";
-const arr=JSON.parse(localStorage.getItem(KEY)||"[]");
-arr.forEach(txt=>{
-const d=document.createElement("div");
-d.className="hcard";
-d.textContent=txt;
-gallery.appendChild(d);
-});
-}
-
-function copyAll(){
-const arr=JSON.parse(localStorage.getItem(KEY)||"[]");
-navigator.clipboard.writeText(arr.join("\n\n"));
-}
-
-function downloadAll(){
-const arr=JSON.parse(localStorage.getItem(KEY)||"[]");
-const blob=new Blob([arr.join("\n\n")],{type:"text/plain"});
-const a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="panda_haiku_collection.txt";
-a.click();
-URL.revokeObjectURL(a.href);
-}
-
-renderGallery();
-start();
-</script>
+    generate();
+  </script>
 </body>
 </html>
