@@ -1,128 +1,166 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>パンダ俳句 β</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>パンダ俳句 β</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
-      background: #f0f0f0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  background: #f2f2f2;
+}
 
-    .card {
-      width: 90%;
-      max-width: 420px;
-      background: #ffffff;
-      border-radius: 24px;
-      padding: 2.5rem 2rem 3rem;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      text-align: center;
-    }
+.wrapper {
+  max-width: 420px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.12);
+  padding: 1.5rem;
+}
 
-    .image-box {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 1.5rem;
-      border: 2px solid #ddd;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #aaa;
-      font-size: 0.9rem;
-    }
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    h1 {
-      margin: 0 0 2rem;
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
+.image-box {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  color: #aaa;
+}
 
-    .haiku {
-      margin: 2rem 0;
-      line-height: 2.2;
-      font-size: 1.25rem;
-      color: #333;
-    }
+h1 {
+  font-size: 1.1rem;
+  margin: 0;
+}
 
-    button {
-      appearance: none;
-      border: none;
-      border-radius: 999px;
-      padding: 0.7rem 2rem;
-      font-size: 1rem;
-      background: #111;
-      color: #fff;
-      cursor: pointer;
-    }
+.placeholders {
+  text-align: center;
+  color: #aaa;
+  margin: 2rem 0 1.5rem;
+  line-height: 2;
+}
 
-    button:hover {
-      opacity: 0.85;
-    }
-  </style>
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: .7rem 1rem;
+  margin-bottom: .8rem;
+}
+
+.row span {
+  font-size: 1rem;
+}
+
+.row button {
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 999px;
+  padding: .2rem .8rem;
+  cursor: pointer;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 1.5rem 0;
+}
+
+.history-title {
+  font-weight: 600;
+  margin-bottom: .8rem;
+}
+
+.history {
+  display: flex;
+  gap: .8rem;
+}
+
+.card {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: .6rem;
+  writing-mode: vertical-rl;
+  text-align: center;
+  font-size: .9rem;
+}
+</style>
 </head>
 
 <body>
-  <div class="card">
-    <div class="image-box">
-      image
-    </div>
+<div class="wrapper">
 
+  <div class="header">
+    <div class="image-box">img</div>
     <h1>パンダ俳句 β</h1>
-
-    <div class="haiku">
-      <div id="first">（初句）</div>
-      <div id="middle">（中句）</div>
-      <div id="last">（結句）</div>
-    </div>
-
-    <button onclick="generate()">選ぶ</button>
   </div>
 
-  <script>
-    const trad = {
-      spring: ["春雷や", "若葉揺れ", "花の雨"],
-      summer: ["夏雲や", "蝉しぐれ", "川光る"],
-      autumn: ["秋風や", "虫の声", "月高し"],
-      winter: ["初霜や", "雪しんしん", "冬の星"]
-    };
+  <div class="placeholders">
+    <div id="first">（初句）</div>
+    <div id="middle">（中句）</div>
+    <div id="last">（結句）</div>
+  </div>
 
-    const modern = {
-      spring: ["改札で", "画面越し", "通知鳴る"],
-      summer: ["冷房の", "ガラス越し", "白い午後"],
-      autumn: ["終電で", "無人駅", "イヤホン外す"],
-      winter: ["深夜便", "白い壁", "息白し"]
-    };
+  <div class="row">
+    <span id="opt1"></span>
+    <button onclick="choose('first')">選ぶ</button>
+  </div>
 
-    const ends = {
-      spring: ["まだ遠い", "揺れている", "黙ってる"],
-      summer: ["少し待つ", "目を閉じる", "風が来る"],
-      autumn: ["何も言わず", "そのままで", "歩き出す"],
-      winter: ["朝になる", "音もなく", "消えてゆく"]
-    };
+  <div class="row">
+    <span id="opt2"></span>
+    <button onclick="choose('middle')">選ぶ</button>
+  </div>
 
-    function pick(obj) {
-      const keys = Object.keys(obj);
-      const k = keys[Math.floor(Math.random() * keys.length)];
-      const arr = obj[k];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
+  <hr>
 
-    function generate() {
-      document.getElementById("first").textContent  = pick(trad);
-      document.getElementById("middle").textContent = pick(modern);
-      document.getElementById("last").textContent   = pick(ends);
-    }
+  <div class="history-title">これまでの作品</div>
+  <div class="history">
+    <div class="card" id="h1"></div>
+    <div class="card" id="h2"></div>
+  </div>
 
-    generate();
-  </script>
+</div>
+
+<script>
+const trad = ["春雷や","残雪や","秋風や","初霜や"];
+const modern = ["花粉や","星のきらめき","無人駅","白い壁"];
+const ends = ["黙ってる","揺れている","朝になる","音もなく"];
+
+function rand(arr){
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function refreshOptions(){
+  document.getElementById("opt1").textContent = rand(trad);
+  document.getElementById("opt2").textContent = rand(modern);
+}
+
+function choose(part){
+  if(part==="first"){
+    document.getElementById("first").textContent =
+      document.getElementById("opt1").textContent;
+  }
+  if(part==="middle"){
+    document.getElementById("middle").textContent =
+      document.getElementById("opt2").textContent;
+  }
+}
+
+refreshOptions();
+</script>
 </body>
 </html>
