@@ -79,9 +79,38 @@ small{color:#666}
 </div>
 
 <script>
-const trad=["残雪や","冬星や","秋風や","春雷や","初霜や"];
-const modern=["冷房や","花粉や","受験や","帰省や","終電や"];
-const ends=["まだ温い","無人駅","ほどけゆく","白い壁","黙ってる","揺れている"];
+const trad = {
+  spring: ["残雪や","春雷や"],
+  summer: [],
+  autumn: ["秋風や"],
+  winter: ["冬星や","初霜や"]
+};
+
+const modern = {
+  spring: ["花粉や"],
+  summer: ["冷房や","帰省や"],
+  autumn: [],
+  winter: ["受験や","終電や"]
+};
+
+const ends = ["まだ温い","無人駅","ほどけゆく","白い壁","黙ってる","揺れている"];
+
+  // 今日の季節を二十四節気で決める
+function getSeasonBySekki() {
+  const today = new Date();
+  const year = today.getFullYear();
+
+  const risshun = new Date(year, 1, 4);  // 2月4日
+  const rikka   = new Date(year, 4, 5);  // 5月5日
+  const risshuu = new Date(year, 7, 7);  // 8月7日
+  const rittou  = new Date(year,10, 7);  // 11月7日
+
+  if (today >= risshun && today < rikka) return "spring";
+  if (today >= rikka   && today < risshuu) return "summer";
+  if (today >= risshuu && today < rittou) return "autumn";
+  return "winter";
+}
+
   // すでに使った言葉を覚えるしくみ
 function shuffle(array) {
   const a = [...array];
@@ -126,8 +155,11 @@ resetLines();
 document.getElementById("stageDone").classList.add("hidden");
 const box=document.getElementById("stageOpen");
 box.innerHTML="";
-const A = drawWord("deck_trad", trad);
-const B = drawWord("deck_modern", modern);
+const season = getSeasonBySekki();
+
+const A = drawWord("deck_trad", trad[season]);
+const B = drawWord("deck_modern", modern[season]);
+
 [A,B].forEach(t=>{
 const d=document.createElement("div");
 d.className="opt";
