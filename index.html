@@ -125,6 +125,11 @@ hr {
     <button onclick="choose('middle')">選ぶ</button>
   </div>
 
+  <div class="row">
+    <span id="opt3"></span>
+    <button onclick="choose('last')">選ぶ</button>
+  </div>
+
   <hr>
 
   <div class="history-title">これまでの作品</div>
@@ -136,31 +141,59 @@ hr {
 </div>
 
 <script>
-const trad = ["春雷や","残雪や","秋風や","初霜や"];
-const modern = ["花粉や","星のきらめき","無人駅","白い壁"];
-const ends = ["黙ってる","揺れている","朝になる","音もなく"];
+const trad = {
+  spring: ["春雷や","花の雨","若葉揺れ"],
+  summer: ["夏雲や","蝉しぐれ","川光る"],
+  autumn: ["秋風や","虫の声","月高し"],
+  winter: ["初霜や","雪しんしん","冬の星"]
+};
 
-function rand(arr){
+const modern = {
+  spring: ["改札で","通知鳴る","画面越し"],
+  summer: ["冷房の","白い午後","ガラス越し"],
+  autumn: ["終電で","無人駅","イヤホン外す"],
+  winter: ["深夜便","白い壁","息白し"]
+};
+
+const ends = {
+  spring: ["まだ遠い","揺れている","黙ってる"],
+  summer: ["少し待つ","目を閉じる","風が来る"],
+  autumn: ["何も言わず","そのままで","歩き出す"],
+  winter: ["朝になる","音もなく","消えてゆく"]
+};
+
+function pick(obj){
+  const seasons = Object.keys(obj);
+  const s = seasons[Math.floor(Math.random()*seasons.length)];
+  const arr = obj[s];
   return arr[Math.floor(Math.random()*arr.length)];
 }
 
-function refreshOptions(){
-  document.getElementById("opt1").textContent = rand(trad);
-  document.getElementById("opt2").textContent = rand(modern);
+function refresh(){
+  opt1.textContent = pick(trad);
+  opt2.textContent = pick(modern);
+  opt3.textContent = pick(ends);
 }
 
 function choose(part){
-  if(part==="first"){
-    document.getElementById("first").textContent =
-      document.getElementById("opt1").textContent;
+  if(part==="first")  first.textContent  = opt1.textContent;
+  if(part==="middle") middle.textContent = opt2.textContent;
+  if(part==="last"){
+    last.textContent = opt3.textContent;
+    saveHistory();
   }
-  if(part==="middle"){
-    document.getElementById("middle").textContent =
-      document.getElementById("opt2").textContent;
-  }
+  refresh();
 }
 
-refreshOptions();
+function saveHistory(){
+  h2.textContent = h1.textContent;
+  h1.textContent =
+    first.textContent + "　" +
+    middle.textContent + "　" +
+    last.textContent;
+}
+
+refresh();
 </script>
 </body>
 </html>
