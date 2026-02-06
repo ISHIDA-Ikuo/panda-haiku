@@ -34,6 +34,10 @@
         .primary { background: var(--primary); color: #fff; border: none; font-weight: bold; font-size: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .primary:active { transform: scale(0.98); }
         
+        /* 更新ボタン用スタイル */
+        .refresh-btn { border: none; background: #f9f9f9; color: #666; font-size: 13px; padding: 8px; border-radius: 10px; margin-bottom: 8px; align-self: flex-end; display: flex; align-items: center; gap: 4px; }
+        .refresh-btn:hover { background: #f0f0f0; color: #333; }
+
         input { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 16px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; -webkit-appearance: none; }
         input:focus { border-color: #111; }
         
@@ -71,7 +75,6 @@
 <div class="wrapper">
     <div class="card">
         <div class="top">
-            <!-- 指定されたリンクの画像に変更しました -->
             <img class="panda" src="https://45jp.net/wp-content/uploads/2020/05/warau_panda.png" alt="パンダ" onerror="this.src='https://img.icons8.com/emoji/96/000000/panda-emoji.png'">
             <div>
                 <span class="logo-text">パンダ俳句 β</span><br>
@@ -86,7 +89,10 @@
         </div>
 
         <div id="stage1" class="controls">
-            <span class="section-title">AIが選んだ季語（初句）</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <span class="section-title">AIが選んだ季語（初句）</span>
+                <button class="refresh-btn" onclick="refreshFirstOptions()">↺ 他の候補</button>
+            </div>
             <div id="firstOptions"></div>
         </div>
 
@@ -98,7 +104,10 @@
         </div>
 
         <div id="stage3" class="controls hidden">
-            <span class="section-title">結句を選んでね</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <span class="section-title">結句を選んでね</span>
+                <button class="refresh-btn" onclick="refreshLastOptions()">↺ 他の候補</button>
+            </div>
             <div id="lastOptions"></div>
             <hr style="margin:12px 0">
             <span class="section-title">または自分で結句を書く</span>
@@ -128,10 +137,10 @@
 
 <script>
 const seasonData = {
-    spring: { label: "春", first: ["春雷や", "花の雨", "若草や", "朧月", "風光る", "陽炎や", "さくら散る", "うららかや", "残雪や"], last: ["まだ遠い", "揺れている", "黙ってる", "夢の中", "ほどけゆく", "風が舞う", "蝶ひとつ"] },
-    summer: { label: "夏", first: ["夏雲や", "蝉しぐれ", "川光る", "青嵐", "夕立や", "ほととぎす", "短夜や", "ひまわりや", "冷房や"], last: ["少し待つ", "目を閉じる", "風が来る", "無人駅", "白い壁", "水しぶき", "影ひとつ"] },
-    autumn: { label: "秋", first: ["秋風や", "虫の声", "月高し", "鰯雲", "露の世や", "秋日和", "紅葉散る", "山装う", "天高し"], last: ["何も言わず", "そのままで", "歩き出す", "影が伸び", "冷えてゆく", "空高く", "どこまでも"] },
-    winter: { label: "冬", first: ["初霜や", "雪しんしん", "冬の星", "枯野かな", "氷張る", "息白し", "寒月や", "山眠る", "冬ざれや"], last: ["朝になる", "音もなく", "消えてゆく", "灯がともる", "まだ温い", "白くなる", "凍りつく"] }
+    spring: { label: "春", first: ["春雷や", "花の雨", "若草や", "朧月", "風光る", "陽炎や", "さくら散る", "うららかや", "残雪や", "春の風", "雛祭り", "山笑う", "草餅や", "木の芽時"], last: ["まだ遠い", "揺れている", "黙ってる", "夢の中", "ほどけゆく", "風が舞う", "蝶ひとつ", "光りだす", "香る朝", "空の色"] },
+    summer: { label: "夏", first: ["夏雲や", "蝉しぐれ", "川光る", "青嵐", "夕立や", "ほととぎす", "短夜や", "ひまわりや", "冷房や", "氷水", "薫風や", "祭笛", "草茂る", "星月夜"], last: ["少し待つ", "目を閉じる", "風が来る", "無人駅", "白い壁", "水しぶき", "影ひとつ", "どこまでも", "透き通る", "また明日"] },
+    autumn: { label: "秋", first: ["秋風や", "虫の声", "月高し", "鰯雲", "露の世や", "秋日和", "紅葉散る", "山装う", "天高し", "新米や", "不知火や", "秋の空", "銀杏散る", "夜長かな"], last: ["何も言わず", "そのままで", "歩き出す", "影が伸び", "冷えてゆく", "空高く", "どこまでも", "懐かしく", "ふと思い", "静かなり"] },
+    winter: { label: "冬", first: ["初霜や", "雪しんしん", "冬の星", "枯野かな", "氷張る", "息白し", "寒月や", "山眠る", "冬ざれや", "石炭や", "焚き火かな", "冬の朝", "大雪や", "春待つ心"], last: ["朝になる", "音もなく", "消えてゆく", "灯がともる", "まだ温い", "白くなる", "凍りつく", "手の中に", "じっとして", "深く吐く"] }
 };
 
 const KEY = "panda_haiku_vfinal_data";
@@ -162,7 +171,12 @@ function start() {
     document.getElementById("lastInput").value = "";
     
     showStage(1);
+    refreshFirstOptions();
+}
 
+function refreshFirstOptions() {
+    const seasonKey = getSeasonKey();
+    const data = seasonData[seasonKey];
     const box = document.getElementById("firstOptions");
     box.innerHTML = "";
     const options = [];
@@ -197,6 +211,11 @@ function confirmMiddle() {
     document.getElementById("l2").textContent = val;
     document.getElementById("l2").classList.remove("dim");
     
+    refreshLastOptions();
+    showStage(3);
+}
+
+function refreshLastOptions() {
     const data = seasonData[getSeasonKey()];
     const box = document.getElementById("lastOptions");
     box.innerHTML = "";
@@ -217,7 +236,6 @@ function confirmMiddle() {
         };
         box.appendChild(btn);
     });
-    showStage(3);
 }
 
 function confirmLastCustom() {
