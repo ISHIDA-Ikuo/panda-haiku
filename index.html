@@ -3,235 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>パンダ俳句 β</title>
+    <title>パンダ俳句 β - Global Ultimate</title>
     <style>
-        :root { --primary: #111; --bg: #fdfdfd; }
+        :root { --primary: #111; --bg: #fdfdfd; --accent-blue: #3b82f6; }
         body { margin: 0; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background: var(--bg); color: #111; line-height: 1.6; }
         .wrapper { max-width: 480px; margin: 0 auto; padding: 20px; box-sizing: border-box; min-height: 100vh; }
         .card { background: #fff; border-radius: 28px; padding: 28px; box-shadow: 0 10px 40px rgba(0,0,0,.06); border: 1px solid #f0f0f0; }
         
+        /* 言語切り替え */
+        .lang-tabs { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; }
+        .lang-tab { cursor: pointer; border: 1px solid #eee; background: #fff; padding: 6px 14px; border-radius: 20px; font-size: 11px; color: #999; transition: 0.2s; outline: none; }
+        .lang-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
         /* ヘッダー */
         .top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-        .panda { width: 72px; height: 72px; object-fit: contain; }
-        .logo-text { font-size: 1.3rem; font-weight: bold; letter-spacing: 0.05em; }
+        .panda-svg { width: 80px; height: 80px; }
+        .logo-text { font-size: 1.5rem; font-weight: bold; letter-spacing: 0.05em; }
         
-        /* 季節選択セレクトボックス */
-        .season-selector-wrapper { position: relative; display: inline-block; }
-        .season-select {
-            -webkit-appearance: none;
-            appearance: none;
-            background: #f0f0f0;
-            border: none;
-            padding: 4px 28px 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            color: #555;
-            cursor: pointer;
-            font-family: inherit;
-        }
-        .season-selector-wrapper::after {
-            content: "▼";
-            font-size: 8px;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: #888;
-        }
+        /* 季節選択 */
+        .season-selector-wrapper { position: relative; display: inline-block; margin-top: 4px; }
+        .season-select { -webkit-appearance: none; appearance: none; background: #f3f3f3; border: none; padding: 4px 28px 4px 12px; border-radius: 20px; font-size: 0.85rem; color: #666; cursor: pointer; }
+        .season-selector-wrapper::after { content: "▼"; font-size: 8px; position: absolute; right: 12px; top: 52%; transform: translateY(-50%); pointer-events: none; color: #aaa; }
         
         /* 俳句表示 */
-        .haiku-display { text-align: center; margin: 40px 0; min-height: 160px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; }
-        .line { font-size: 28px; min-height: 1.6em; transition: all 0.4s ease; letter-spacing: 0.1em; }
-        .dim { color: #eee; font-size: 22px; }
+        .haiku-container { display: flex; justify-content: center; margin: 30px 0; }
+        .haiku-display { 
+            background: var(--accent-blue); 
+            color: #fff; 
+            padding: 30px 40px; 
+            min-width: 140px; 
+            min-height: 160px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 12px;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        .haiku-display.vertical { writing-mode: vertical-rl; text-orientation: upright; }
+        .haiku-display.horizontal { flex-direction: column; writing-mode: horizontal-tb; text-align: center; }
         
-        /* 操作エリア */
+        .line { font-size: 26px; min-height: 1.2em; transition: all 0.4s ease; letter-spacing: 0.15em; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; }
+        .dim { color: rgba(255,255,255,0.7); font-size: 20px; letter-spacing: 0.05em; }
+        
+        /* コントロール */
         .controls { display: flex; flex-direction: column; gap: 14px; animation: slideUp 0.5s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .section-title { font-size: 0.85rem; font-weight: bold; color: #888; margin-bottom: 4px; display: block; }
+        .header-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px; }
+        .section-title { font-size: 0.85rem; font-weight: bold; color: #888; }
+        .refresh-btn { border: none; background: #f9f9f9; color: #888; font-size: 11px; padding: 6px 14px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
         .opt { display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; border-radius: 16px; padding: 16px; background: #fff; text-align: left; width: 100%; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .opt:hover { border-color: #111; transform: scale(1.02); }
-        .opt strong { color: #111; font-size: 0.8rem; background: #f0f0f0; padding: 4px 8px; border-radius: 6px; }
+        .opt:hover { border-color: var(--accent-blue); transform: scale(1.02); }
+        .opt strong { color: var(--accent-blue); font-size: 0.75rem; background: #eff6ff; padding: 4px 10px; border-radius: 8px; }
         
         button { cursor: pointer; border: 1px solid #ddd; background: #fff; border-radius: 14px; padding: 12px 20px; font-size: 15px; transition: 0.2s; outline: none; }
         .primary { background: var(--primary); color: #fff; border: none; font-weight: bold; font-size: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .primary:active { transform: scale(0.98); }
+        input { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 16px; font-size: 16px; box-sizing: border-box; outline: none; }
         
-        .refresh-btn { border: none; background: #f9f9f9; color: #666; font-size: 13px; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; align-self: flex-end; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
-        .refresh-btn:hover { background: #f0f0f0; color: #333; }
-
-        input { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 16px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; -webkit-appearance: none; }
-        input:focus { border-color: #111; }
+        .hidden { display: none !important; }
         
-        .hidden { display: none; }
-        
-        /* 履歴（作品一覧） */
+        /* ギャラリー */
         .history-section { margin-top: 50px; }
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 16px; margin-top: 24px; }
-        .hcard { 
-            writing-mode: vertical-rl; 
-            text-orientation: upright; 
-            font-family: "Yu Mincho", serif; 
-            font-size: 18px; 
-            padding: 24px 18px; 
-            border: 1px solid #f0f0f0; 
-            border-radius: 18px; 
-            background: #fff; 
-            min-height: 180px; 
-            position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            line-height: 1.8;
-        }
-        .delete-btn { position: absolute; bottom: 10px; left: 10px; writing-mode: horizontal-tb; font-size: 10px; color: #ff5555; border: 1px solid #ffebeb; background: #fffafa; padding: 3px 6px; border-radius: 6px; opacity: 0.6; }
-        .delete-btn:hover { opacity: 1; background: #ff5555; color: #fff; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
+        .hcard { font-family: "Yu Mincho", serif; font-size: 16px; padding: 25px 20px; border: 1px solid #f0f0f0; border-radius: 18px; background: #fff; min-height: 180px; position: relative; line-height: 1.6; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .hcard.v { writing-mode: vertical-rl; text-orientation: upright; align-items: center; }
+        .hcard.h { writing-mode: horizontal-tb; text-align: center; align-items: center; }
+        .delete-btn { position: absolute; bottom: 8px; left: 8px; font-size: 10px; color: #ff8888; border: 1px solid #ffecec; background: #fff; border-radius: 6px; padding: 2px 6px; cursor: pointer; }
+
+        .copy-all-btn { border: none; background: #f0f0f0; color: #666; font-size: 11px; padding: 6px 16px; border-radius: 20px; cursor: pointer; }
         
-        .actions { display: flex; gap: 12px; margin-top: 24px; }
-        .actions button { flex: 1; font-size: 13px; color: #666; border-color: #eee; }
-        small { display: block; margin-top: 20px; color: #bbb; text-align: center; font-size: 11px; }
-        
-        hr { border: 0; border-top: 1px solid #f0f0f0; margin: 40px 0; }
+        /* ユーザー接続カウンターのスタイル */
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #f0f0f0; color: #bbb; font-size: 11px; }
+        .visitor-counter { display: inline-flex; align-items: center; gap: 4px; background: #f9f9f9; padding: 4px 10px; border-radius: 10px; color: #999; margin-bottom: 8px; border: 1px solid #f0f0f0; }
+        .visitor-counter .dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px rgba(16,185,129,0.5); }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
+    <div class="lang-tabs">
+        <button id="t-ja" class="lang-tab active" onclick="setLang('ja')">日本語</button>
+        <button id="t-fr" class="lang-tab" onclick="setLang('fr')">français</button>
+        <button id="t-en" class="lang-tab" onclick="setLang('en')">english</button>
+    </div>
+
     <div class="card">
         <div class="top">
-            <img class="panda" src="https://45jp.net/wp-content/uploads/2020/05/warau_panda.png" alt="パンダ" onerror="this.src='https://img.icons8.com/emoji/96/000000/panda-emoji.png'">
+            <svg class="panda-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="25" r="12" fill="#111" />
+                <circle cx="75" cy="25" r="12" fill="#111" />
+                <circle cx="50" cy="55" r="40" fill="#fff" stroke="#111" stroke-width="2" />
+                <ellipse cx="35" cy="50" rx="10" ry="12" fill="#111" transform="rotate(-15, 35, 50)" />
+                <ellipse cx="65" cy="50" rx="10" ry="12" fill="#111" transform="rotate(15, 65, 50)" />
+                <circle cx="35" cy="50" r="3" fill="#fff" />
+                <circle cx="65" cy="50" r="3" fill="#fff" />
+                <path d="M46 65 Q50 70 54 65" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" />
+                <ellipse cx="50" cy="64" rx="4" ry="3" fill="#111" />
+            </svg>
             <div>
-                <span class="logo-text">パンダ俳句 β</span><br>
+                <span class="logo-text" id="ui-title">パンダ俳句 β</span><br>
                 <div class="season-selector-wrapper">
                     <select id="seasonSelect" class="season-select" onchange="changeSeason()">
-                        <option value="spring">季節：春</option>
-                        <option value="summer">季節：夏</option>
-                        <option value="autumn">季節：秋</option>
-                        <option value="winter">季節：冬</option>
+                        <option value="spring">季節：春 / Spring</option>
+                        <option value="summer">季節：夏 / Summer</option>
+                        <option value="autumn">季節：秋 / Autumn</option>
+                        <option value="winter">季節：冬 / Winter</option>
                     </select>
                 </div>
             </div>
         </div>
 
-        <div class="haiku-display">
-            <div id="l1" class="line dim">（初句）</div>
-            <div id="l2" class="line dim">（中句）</div>
-            <div id="l3" class="line dim">（結句）</div>
+        <div class="haiku-container">
+            <div class="haiku-display" id="haikuDisplay"></div>
         </div>
 
+        <!-- Stages 1-4 (Existing) -->
         <div id="stage1" class="controls">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                <span class="section-title">AIが選んだ季語（初句）</span>
-                <button class="refresh-btn" onclick="refreshFirstOptions()">↺ 他の候補を見る</button>
+            <div class="header-flex">
+                <span class="section-title" id="ui-s1">AIが選んだ季語（初句）</span>
+                <button class="refresh-btn" onclick="refreshFirstOptions()" id="ui-refresh-1">↺ 他の候補を見る</button>
             </div>
             <div id="firstOptions"></div>
         </div>
 
         <div id="stage2" class="controls hidden">
-            <span class="section-title">中句（七音）を入力</span>
-            <input type="text" id="middleInput" placeholder="例：笹をむしゃむしゃ" maxlength="30">
-            <button class="primary" onclick="confirmMiddle()">結句へ進む</button>
-            <button onclick="start()" style="font-size:12px; border:none; color:#999;">← 最初からやり直す</button>
+            <span class="section-title" id="ui-s2">中句を入力</span>
+            <input type="text" id="middleInput" placeholder="..." maxlength="40">
+            <button class="primary" onclick="confirmMiddle()" id="ui-next">次へ進む</button>
+            <button onclick="start()" style="font-size:12px; border:none; color:#999;" id="ui-reset">← やり直す</button>
         </div>
 
         <div id="stage3" class="controls hidden">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                <span class="section-title">結句を選んでね</span>
-                <button class="refresh-btn" onclick="refreshLastOptions()">↺ 他の候補を見る</button>
+            <div class="header-flex">
+                <span class="section-title" id="ui-s3">結句を選ぶ</span>
+                <button class="refresh-btn" onclick="refreshLastOptions()" id="ui-refresh-2">↺ 他の候補を見る</button>
             </div>
             <div id="lastOptions"></div>
-            <hr style="margin:12px 0">
-            <span class="section-title">または自分で結句を書く</span>
-            <input type="text" id="lastInput" placeholder="例：昼寝かな" maxlength="30">
-            <button class="primary" onclick="confirmLastCustom()">自分で書いた句で決定</button>
-            <button onclick="backToMiddle()" style="font-size:12px; border:none; color:#999;">← 中句を書き直す</button>
+            <hr style="border:0; border-top:1px solid #f0f0f0; margin:10px 0">
+            <span class="section-title" id="ui-custom-last">または入力</span>
+            <input type="text" id="lastInput" placeholder="..." maxlength="40">
+            <button class="primary" onclick="confirmLastCustom()" id="ui-done">決定</button>
+            <button onclick="showStage(2)" style="font-size:12px; border:none; color:#999;" id="ui-back">← 中句に戻る</button>
         </div>
 
-        <div id="stage4" class="controls hidden">
-            <button class="primary" onclick="saveHaiku()">この一句をコレクションに保存</button>
-            <button onclick="start()">保存せずに新しく作る</button>
+        <div id="stage4" class="controls hidden" style="text-align:center;">
+            <p id="ui-finish-msg" style="font-size:14px; color:#666;">素晴らしい一句ができました！</p>
+            <button class="primary" onclick="saveHaiku()" id="ui-save">この一句を保存する</button>
+            <button onclick="start()" style="margin-top:10px; border:none; color:#555;" id="ui-new">新しく作る</button>
         </div>
 
+        <!-- History -->
         <div class="history-section">
-            <hr>
-            <h3>これまでの作品</h3>
-            <div id="gallery" class="gallery"></div>
-            
-            <div class="actions" id="galleryActions">
-                <button onclick="copyAll()">すべてコピー</button>
-                <button onclick="downloadAll()">一括ダウンロード</button>
+            <hr style="border:0; border-top:1px solid #f0f0f0; margin:40px 0">
+            <div class="history-header">
+                <h3 id="ui-hist" style="font-size:14px; margin:0;">これまでの作品</h3>
+                <button class="copy-all-btn" onclick="copyAllHistory()" id="ui-copy-all">すべてコピー</button>
             </div>
-            <small>※データはこのブラウザにのみ保存されています</small>
+            <div id="gallery" class="gallery"></div>
+        </div>
+
+        <div class="footer">
+            <div class="visitor-counter">
+                <span class="dot"></span>
+                <span id="ui-visitors">ユーザー接続:</span>
+                <span id="visitorCount" style="font-weight: bold; color: #666;">---</span>
+            </div><br>
+            © Panda Haiku Global Ultimate
         </div>
     </div>
 </div>
 
 <script>
-const seasonData = {
-    spring: { label: "春", first: ["春雷や", "花の雨", "若草や", "朧月", "風光る", "陽炎や", "さくら散る", "うららかや", "残雪や", "春の風", "雛祭り", "山笑う", "草餅や", "木の芽時", "春一番", "チューリップ"], last: ["まだ遠い", "揺れている", "黙ってる", "夢の中", "ほどけゆく", "風が舞う", "蝶ひとつ", "光りだす", "香る朝", "空の色", "雨上がり"] },
-    summer: { label: "夏", first: ["夏雲や", "蝉しぐれ", "川光る", "青嵐", "夕立や", "ほととぎす", "短夜や", "ひまわりや", "冷房や", "氷水", "薫風や", "祭笛", "草茂る", "星月夜", "金魚鉢", "打ち水や"], last: ["少し待つ", "目を閉じる", "風が来る", "無人駅", "白い壁", "水しぶき", "影ひとつ", "どこまでも", "透き通る", "また明日", "夏の果て"] },
-    autumn: { label: "秋", first: ["秋風や", "虫の声", "月高し", "鰯雲", "露の世や", "秋日和", "紅葉散る", "山装う", "天高し", "新米や", "不知火や", "秋の空", "銀杏散る", "夜長かな", "案山子かな", "秋の暮"], last: ["何も言わず", "そのままで", "歩き出す", "影が伸び", "冷えてゆく", "空高く", "どこまでも", "懐かしく", "ふと思い", "静かなり", "旅に出る"] },
-    winter: { label: "冬", first: ["初霜や", "雪しんしん", "冬の星", "枯野かな", "氷張る", "息白し", "寒月や", "山眠る", "冬ざれや", "石炭や", "焚き火かな", "冬の朝", "大雪や", "春待つ心", "湯豆腐や", "年忘れ"], last: ["朝になる", "音もなく", "消えてゆく", "灯がともる", "まだ温い", "白くなる", "凍りつく", "手の中に", "じっとして", "深く吐く", "春を待つ"] }
+let currentLang = 'ja';
+let currentSeason = 'spring';
+const KEY = "panda_haiku_v_ultimate_v3";
+const VISIT_KEY = "panda_visitor_count_mock"; // ローカルストレージを使用した擬似カウンター
+
+// 訪問者カウンターの更新（擬似）
+function updateVisitorCounter() {
+    let count = parseInt(localStorage.getItem(VISIT_KEY) || "1250");
+    // ページロードごとに微増させるデモ
+    count += Math.floor(Math.random() * 3) + 1;
+    localStorage.setItem(VISIT_KEY, count);
+    document.getElementById('visitorCount').textContent = count.toLocaleString();
+}
+
+const langData = {
+    ja: {
+        ui: { 
+            title: "パンダ俳句 β", s1: "AIが選んだ季語（初句）", s2: "中句（七音）を入力", s3: "結句を選ぶ", custom_last: "または自由に入力",
+            next: "次へ進む", done: "決定", hist: "これまでの作品", p1: "（初句）", p2: "（中句）", p3: "（結句）",
+            select: "選ぶ", reset: "やり直す", back: "中句に戻る", refresh: "↺ 他の候補", finish: "素晴らしい一句ができました！", 
+            save: "この一句を保存する", new: "新しく作る", copyAll: "すべてコピー", copied: "コピーしました！", del: "削除",
+            visitors: "ユーザー接続:"
+        },
+        seasons: {
+            spring: { 
+                first: ["春雷や", "花の雨", "朧月", "風光る", "陽炎や", "さくら花", "うららかや", "春の風", "山笑う", "鳥の恋", "目借時", "蛙の目", "土筆かな", "草餅や", "春一番", "雛の顔", "菜の花や", "東風吹く"], 
+                last: ["揺れている", "夢の中", "蝶ひとつ", "光りだす", "どこまでも", "目が覚める", "こぼれ落つ", "香る朝", "動き出す", "静かなり", "風に舞う", "色づきぬ", "今日という日"] 
+            },
+            summer: { 
+                first: ["夏雲や", "蝉しぐれ", "夕立や", "ほととぎす", "青嵐", "短夜や", "ひまわりや", "薫風や", "薄暑かな", "涼しげに", "噴水や", "金魚鉢", "滝の音", "打水や", "夕凪や", "雷鳴や", "万緑や", "氷水"], 
+                last: ["風が来る", "影ひとつ", "また明日", "夏の果て", "水の色", "青き空", "響きあう", "熱き夜", "消えゆきぬ", "眩しくて", "立ち止まる", "波の音", "雲の峰"] 
+            },
+            autumn: { 
+                first: ["秋風や", "虫の声", "鰯雲", "新米や", "夜長かな", "赤とんぼ", "名月や", "秋麗", "露の世", "柿の実や", "野分かな", "灯火や", "案山子かな", "葛の花", "萩の風", "雁の列", "銀杏散る", "月見かな"], 
+                last: ["静かなり", "空高く", "影が伸び", "旅に出る", "色づきぬ", "心澄む", "こぼれ落つ", "深まりぬ", "懐かしき", "ひとときを", "山粧う", "寂しくて", "風の声"] 
+            },
+            winter: { 
+                first: ["初霜や", "冬の星", "息白し", "冬の朝", "枯野かな", "雪の果て", "冬至かな", "小春日和", "氷張る", "火桶かな", "水仙や", "寒鴉", "雪催い", "着ぶくれて", "冬籠", "年の暮", "枯れ木かな", "霜柱"], 
+                last: ["春を待つ", "音もなく", "深く吐く", "まだ温い", "白き夢", "夜は深く", "凍てつきぬ", "ぬくもりを", "灯る窓", "見上げれば", "明けてゆく", "一歩ずつ", "静けさよ"] 
+            }
+        }
+    },
+    fr: {
+        ui: { 
+            title: "Panda Haïkaï", s1: "Kigo (Ligne 1)", s2: "Ligne 2 (7 syllabes)", s3: "Ligne 3 (5 syllabes)", custom_last: "Ou manuel",
+            next: "Suivant", done: "Finish", hist: "Galerie", p1: "(5 syllabes)", p2: "(7 syllabes)", p3: "(5 syllabes)",
+            select: "OK", reset: "Reset", back: "Retour", refresh: "↺ Autres", finish: "Magnifique !", 
+            save: "Sauvegarder", new: "Nouveau", copyAll: "Tout copier", copied: "Copié !", del: "Effacer",
+            visitors: "Utilisateurs en ligne:"
+        },
+        seasons: {
+            spring: { 
+                first: ["Cerisiers fuyants,", "Pluie de march,", "Vent de printemps :", "Premier bourgeon,", "Parfum de fleurs,"], 
+                last: ["un doux rêve.", "clarté pure.", "parfums doux.", "le jour se lève."] 
+            },
+            summer: { 
+                first: ["Soleil d'été —", "Chant des cigales :", "Orage lointain,", "Vague bleue,"], 
+                last: ["l'ombre fuit.", "le temps dort.", "nuit courte.", "vague bleue."] 
+            },
+            autumn: { 
+                first: ["Vent d'automne :", "Lune rousse —", "Feuille morte,", "Brume du soir,"], 
+                last: ["silence d'or.", "voyage lointain.", "terre froide.", "le temps passe."] 
+            },
+            winter: { 
+                first: ["Brume d'hiver,", "Première neige —", "Souffle blanc :", "Nuit de gel —"], 
+                last: ["attente douce.", "profond silence.", "monde pur.", "feu qui brille."] 
+            }
+        }
+    },
+    en: {
+        ui: { 
+            title: "Panda Haiku", s1: "Kigo (Line 1)", s2: "Line 2 (7 syllables)", s3: "Line 3 (5 syllables)", custom_last: "Or manual",
+            next: "Next", done: "Finish", hist: "Gallery", p1: "(5 syllables)", p2: "(7 syllables)", p3: "(5 syllables)",
+            select: "Pick", reset: "Restart", back: "Back", refresh: "↺ More", finish: "Well done!", 
+            save: "Save", new: "New", copyAll: "Copy All", copied: "Copied!", del: "Delete",
+            visitors: "Users connected:"
+        },
+        seasons: {
+            spring: { 
+                first: ["Old pond,", "Spring rain —", "Cherry blossoms :", "Warm breeze,"], 
+                last: ["a dream begins.", "water sound.", "soft light.", "spring is here."] 
+            },
+            summer: { 
+                first: ["Summer heat —", "Cicadas singing :", "Passing storm,", "Green fields —"], 
+                last: ["the sun sets.", "cool breeze.", "short night.", "summer end."] 
+            },
+            autumn: { 
+                first: ["Autumn wind :", "Harvest moon —", "Silver clouds,", "Yellow leaf,"], 
+                last: ["quiet night.", "endless road.", "winter near.", "shadows fall."] 
+            },
+            winter: { 
+                first: ["Winter moon,", "First snow —", "White breath :", "Silent frost —"], 
+                last: ["waiting for spring.", "deep silence.", "cold morning.", "white dream."] 
+            }
+        }
+    }
 };
 
-const KEY = "panda_haiku_vfinal_data";
-let currentSeason = "";
+function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('t-'+lang).classList.add('active');
+    
+    const u = langData[lang].ui;
+    document.getElementById('ui-title').textContent = u.title;
+    document.getElementById('ui-s1').textContent = u.s1;
+    document.getElementById('ui-s2').textContent = u.s2;
+    document.getElementById('ui-s3').textContent = u.s3;
+    document.getElementById('ui-custom-last').textContent = u.custom_last;
+    document.getElementById('ui-next').textContent = u.next;
+    document.getElementById('ui-done').textContent = u.done;
+    document.getElementById('ui-hist').textContent = u.hist;
+    document.getElementById('ui-refresh-1').textContent = u.refresh;
+    document.getElementById('ui-refresh-2').textContent = u.refresh;
+    document.getElementById('ui-reset').textContent = u.reset;
+    document.getElementById('ui-back').textContent = u.back;
+    document.getElementById('ui-finish-msg').textContent = u.finish;
+    document.getElementById('ui-save').textContent = u.save;
+    document.getElementById('ui-new').textContent = u.new;
+    document.getElementById('ui-copy-all').textContent = u.copyAll;
+    document.getElementById('ui-visitors').textContent = u.visitors;
 
-function autoDetectSeason() {
-    const month = new Date().getMonth() + 1;
-    if (month >= 3 && month <= 5) return 'spring';
-    if (month >= 6 && month <= 8) return 'summer';
-    if (month >= 9 && month <= 11) return 'autumn';
-    return 'winter';
+    start();
 }
 
 function start() {
-    // 初回のみ自動判定、それ以外は選択されている季節を維持
-    if (!currentSeason) {
-        currentSeason = autoDetectSeason();
-        document.getElementById("seasonSelect").value = currentSeason;
-    }
-
-    resetHaikuDisplay();
-    showStage(1);
-    refreshFirstOptions();
-}
-
-function changeSeason() {
     currentSeason = document.getElementById("seasonSelect").value;
-    // 季節を変えたら作り直し
     resetHaikuDisplay();
     showStage(1);
     refreshFirstOptions();
+    renderGallery();
+    updateVisitorCounter();
 }
 
 function resetHaikuDisplay() {
-    document.getElementById("l1").textContent = "（初句）";
-    document.getElementById("l1").classList.add("dim");
-    document.getElementById("l2").textContent = "（中句）";
-    document.getElementById("l2").classList.add("dim");
-    document.getElementById("l3").textContent = "（結句）";
-    document.getElementById("l3").classList.add("dim");
-
-    document.getElementById("middleInput").value = "";
-    document.getElementById("lastInput").value = "";
+    const area = document.getElementById("haikuDisplay");
+    const u = langData[currentLang].ui;
+    area.className = (currentLang === 'ja') ? "haiku-display vertical" : "haiku-display horizontal";
+    area.innerHTML = `<div id="l1" class="line dim">${u.p1}</div><div id="l2" class="line dim">${u.p2}</div><div id="l3" class="line dim">${u.p3}</div>`;
 }
 
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
 function refreshFirstOptions() {
-    const data = seasonData[currentSeason];
+    const s = langData[currentLang].seasons[currentSeason];
     const box = document.getElementById("firstOptions");
+    const u = langData[currentLang].ui;
     box.innerHTML = "";
-    const options = [];
-    while(options.length < 2) {
-        const p = pick(data.first);
-        if(!options.includes(p)) options.push(p);
-    }
-
-    options.forEach(txt => {
+    const shuffled = [...s.first].sort(() => 0.5 - Math.random()).slice(0, 4);
+    shuffled.forEach(txt => {
         const btn = document.createElement("button");
         btn.className = "opt";
-        btn.innerHTML = `<span>${txt}</span> <strong>選ぶ</strong>`;
+        btn.innerHTML = `<span>${txt}</span> <strong>${u.select}</strong>`;
         btn.onclick = () => {
             document.getElementById("l1").textContent = txt;
             document.getElementById("l1").classList.remove("dim");
@@ -241,37 +337,25 @@ function refreshFirstOptions() {
     });
 }
 
-function showStage(n) {
-    for(let i=1; i<=4; i++) {
-        document.getElementById(`stage${i}`).classList.add("hidden");
-    }
-    document.getElementById(`stage${n}`).classList.remove("hidden");
-}
-
 function confirmMiddle() {
     const val = document.getElementById("middleInput").value.trim();
     if(!val) return;
     document.getElementById("l2").textContent = val;
     document.getElementById("l2").classList.remove("dim");
-    
     refreshLastOptions();
     showStage(3);
 }
 
 function refreshLastOptions() {
-    const data = seasonData[currentSeason];
+    const s = langData[currentLang].seasons[currentSeason];
     const box = document.getElementById("lastOptions");
+    const u = langData[currentLang].ui;
     box.innerHTML = "";
-    const options = [];
-    while(options.length < 3) {
-        const p = pick(data.last);
-        if(!options.includes(p)) options.push(p);
-    }
-
-    options.forEach(txt => {
+    const shuffled = [...s.last].sort(() => 0.5 - Math.random()).slice(0, 4);
+    shuffled.forEach(txt => {
         const btn = document.createElement("button");
         btn.className = "opt";
-        btn.innerHTML = `<span>${txt}</span> <strong>選ぶ</strong>`;
+        btn.innerHTML = `<span>${txt}</span> <strong>${u.select}</strong>`;
         btn.onclick = () => {
             document.getElementById("l3").textContent = txt;
             document.getElementById("l3").classList.remove("dim");
@@ -289,73 +373,72 @@ function confirmLastCustom() {
     showStage(4);
 }
 
-function backToMiddle() { showStage(2); }
-
 function saveHaiku() {
     const h1 = document.getElementById("l1").textContent;
     const h2 = document.getElementById("l2").textContent;
     const h3 = document.getElementById("l3").textContent;
-    const full = `${h1} ${h2} ${h3}`;
-
+    const item = { text: `${h1} ${h2} ${h3}`, lang: currentLang };
     const history = JSON.parse(localStorage.getItem(KEY) || "[]");
-    history.unshift(full);
-    localStorage.setItem(KEY, JSON.stringify(history));
-
-    renderGallery();
+    history.unshift(item);
+    localStorage.setItem(KEY, JSON.stringify(history.slice(0, 50)));
     start();
 }
 
 function renderGallery() {
     const gallery = document.getElementById("gallery");
-    const actions = document.getElementById("galleryActions");
     const history = JSON.parse(localStorage.getItem(KEY) || "[]");
-
+    const u = langData[currentLang].ui;
     gallery.innerHTML = "";
+    
     if(history.length === 0) {
-        gallery.innerHTML = "<p style='grid-column:1/-1; color:#ccc; text-align:center; padding:20px;'>作品はまだありません</p>";
-        actions.style.display = "none";
+        gallery.innerHTML = "<p style='color:#ccc; font-size:12px; text-align:center; grid-column:1/-1; padding:20px;'>No work yet.</p>";
+        document.getElementById('ui-copy-all').style.display = "none";
         return;
     }
-    actions.style.display = "flex";
-
-    history.forEach((text, index) => {
+    
+    document.getElementById('ui-copy-all').style.display = "block";
+    history.forEach((item, index) => {
         const card = document.createElement("div");
-        card.className = "hcard";
-        card.innerHTML = text.replace(/\s/g, '<br>') + 
-            `<button class="delete-btn" onclick="deleteItem(${index})">削除</button>`;
+        card.className = `hcard ${item.lang === 'ja' ? 'v' : 'h'}`;
+        const displayText = (item.lang === 'ja') ? item.text.replace(/\s/g, '<br>') : item.text;
+        card.innerHTML = `<div>${displayText}</div><button class="delete-btn" onclick="deleteItem(${index})">${u.del}</button>`;
         gallery.appendChild(card);
     });
 }
 
 function deleteItem(index) {
-    if(!confirm("この作品を削除しますか？")) return;
     const history = JSON.parse(localStorage.getItem(KEY) || "[]");
     history.splice(index, 1);
     localStorage.setItem(KEY, JSON.stringify(history));
     renderGallery();
 }
 
-function copyAll() {
+function copyAllHistory() {
     const history = JSON.parse(localStorage.getItem(KEY) || "[]");
-    if(!history.length) return;
-    navigator.clipboard.writeText(history.join("\n")).then(() => {
-        alert("コピーしました！");
-    });
+    const fullText = history.map(item => item.text).join('\n---\n');
+    const el = document.createElement('textarea');
+    el.value = fullText;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    
+    const u = langData[currentLang].ui;
+    const btn = document.getElementById('ui-copy-all');
+    const original = btn.textContent;
+    btn.textContent = u.copied;
+    setTimeout(() => btn.textContent = original, 2000);
 }
 
-function downloadAll() {
-    const history = JSON.parse(localStorage.getItem(KEY) || "[]");
-    if(!history.length) return;
-    const blob = new Blob(["【パンダ俳句 作品集】\n\n" + history.join("\n")], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "my_panda_haiku.txt";
-    a.click();
+function showStage(n) {
+    [1,2,3,4].forEach(i => document.getElementById(`stage${i}`).classList.add("hidden"));
+    document.getElementById(`stage${n}`).classList.remove("hidden");
 }
 
-renderGallery();
-start();
+function changeSeason() { start(); }
+
+setLang('ja');
+updateVisitorCounter();
 </script>
 </body>
 </html>
