@@ -3,265 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>パンダ俳句 β - AI Sensei</title>
+    <title>パンダ俳句 β</title>
     <style>
-        :root { --primary: #111; --bg: #fdfdfd; --accent: #79C83D; }
-        body { margin: 0; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif; background: var(--bg); color: #111; }
-        .wrapper { max-width: 480px; margin: 0 auto; padding: 15px; box-sizing: border-box; min-height: 100vh; display: block; }
-        .card { background: #fff; border-radius: 28px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,.06); border: 1px solid #f0f0f0; }
+        :root { --primary: #111; --bg: #fdfdfd; }
+        body { margin: 0; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background: var(--bg); color: #111; line-height: 1.6; }
+        .wrapper { max-width: 480px; margin: 0 auto; padding: 20px; box-sizing: border-box; min-height: 100vh; }
+        .card { background: #fff; border-radius: 28px; padding: 28px; box-shadow: 0 10px 40px rgba(0,0,0,.06); border: 1px solid #f0f0f0; }
         
-        /* Language Tabs */
-        .lang-nav { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; }
-        .lang-btn { cursor: pointer; border: 1px solid #eee; background: #fff; padding: 6px 12px; border-radius: 20px; font-size: 11px; color: #999; }
-        .lang-btn.active { background: var(--primary); color: #fff; }
-
-        /* Panda Top Section */
-        .top { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; position: relative; }
-        .panda { width: 60px; height: 60px; object-fit: contain; cursor: pointer; }
-        .logo-text { font-size: 1.1rem; font-weight: bold; }
+        /* ヘッダー */
+        .top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+        .panda { width: 72px; height: 72px; object-fit: contain; }
+        .logo-text { font-size: 1.3rem; font-weight: bold; letter-spacing: 0.05em; }
         
-        /* Speech Bubble */
-        .bubble { 
-            position: absolute; background: #333; color: #fff; padding: 5px 10px; border-radius: 10px; 
-            font-size: 10px; top: -10px; left: 50px; opacity: 0; transition: 0.3s; pointer-events: none;
+        /* 季節選択セレクトボックス */
+        .season-selector-wrapper { position: relative; display: inline-block; }
+        .season-select {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #f0f0f0;
+            border: none;
+            padding: 4px 28px 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #555;
+            cursor: pointer;
+            font-family: inherit;
         }
-        .bubble.show { opacity: 1; top: -20px; }
-
-        /* Haiku Display */
-        .haiku-display { text-align: center; margin: 20px 0; min-height: 200px; display: flex; justify-content: center; align-items: center; gap: 15px; border-radius: 20px; background: #fafafa; border: 1px dashed #eee; overflow: hidden; }
-        .display-ja { writing-mode: vertical-rl; height: 160px; font-family: serif; font-size: 24px; letter-spacing: 0.2em; }
-        .display-eu { display: flex; flex-direction: column; font-style: italic; font-size: 20px; line-height: 1.6; }
-        .line { min-height: 1.2em; }
-        .dim { color: #ddd; }
+        .season-selector-wrapper::after {
+            content: "▼";
+            font-size: 8px;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #888;
+        }
         
-        /* Control Stages */
-        .controls { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        .section-title { font-size: 0.75rem; font-weight: bold; color: #aaa; text-align: center; margin-bottom: 5px; }
+        /* 俳句表示 */
+        .haiku-display { text-align: center; margin: 40px 0; min-height: 160px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; }
+        .line { font-size: 28px; min-height: 1.6em; transition: all 0.4s ease; letter-spacing: 0.1em; }
+        .dim { color: #eee; font-size: 22px; }
         
-        .opt { display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; border-radius: 12px; padding: 12px; background: #fff; width: 100%; font-size: 14px; }
-        .opt:hover { border-color: var(--accent); }
-        .opt strong { font-size: 9px; background: #f0f0f0; padding: 2px 5px; border-radius: 4px; }
+        /* 操作エリア */
+        .controls { display: flex; flex-direction: column; gap: 14px; animation: slideUp 0.5s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .primary { background: var(--primary); color: #fff; border: none; border-radius: 12px; padding: 15px; font-weight: bold; font-size: 16px; cursor: pointer; width: 100%; }
-        input { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; text-align: center; }
+        .section-title { font-size: 0.85rem; font-weight: bold; color: #888; margin-bottom: 4px; display: block; }
+        .opt { display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; border-radius: 16px; padding: 16px; background: #fff; text-align: left; width: 100%; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .opt:hover { border-color: #111; transform: scale(1.02); }
+        .opt strong { color: #111; font-size: 0.8rem; background: #f0f0f0; padding: 4px 8px; border-radius: 6px; }
+        
+        button { cursor: pointer; border: 1px solid #ddd; background: #fff; border-radius: 14px; padding: 12px 20px; font-size: 15px; transition: 0.2s; outline: none; }
+        .primary { background: var(--primary); color: #fff; border: none; font-weight: bold; font-size: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .primary:active { transform: scale(0.98); }
+        
+        .refresh-btn { border: none; background: #f9f9f9; color: #666; font-size: 13px; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; align-self: flex-end; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
+        .refresh-btn:hover { background: #f0f0f0; color: #333; }
 
-        /* Result */
-        .score-screen { text-align: center; padding: 10px 0; }
-        .score-val { font-size: 40px; font-weight: bold; color: var(--accent); }
-        .critique-text { font-style: italic; color: #555; font-size: 14px; margin: 10px 0; }
-
-        /* History Gallery */
-        .history-section { margin-top: 30px; border-top: 1px solid #f0f0f0; padding-top: 15px; }
-        .gallery { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-        .hcard { writing-mode: vertical-rl; text-orientation: upright; font-family: serif; font-size: 14px; padding: 12px; border: 1px solid #eee; border-radius: 12px; background: #fff; min-width: 100px; height: 140px; position: relative; flex-shrink: 0; }
-        .delete-btn { position: absolute; bottom: 2px; left: 2px; font-size: 9px; color: #ff5555; border: none; background: none; writing-mode: horizontal-tb; }
-
-        .hidden { display: none !important; }
+        input { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 16px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; -webkit-appearance: none; }
+        input:focus { border-color: #111; }
+        
+        .hidden { display: none; }
+        
+        /* 履歴（作品一覧） */
+        .history-section { margin-top: 50px; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 16px; margin-top: 24px; }
+        .hcard { 
+            writing-mode: vertical-rl; 
+            text-orientation: upright; 
+            font-family: "Yu Mincho", serif; 
+            font-size: 18px; 
+            padding: 24px 18px; 
+            border: 1px solid #f0f0f0; 
+            border-radius: 18px; 
+            background: #fff; 
+            min-height: 180px; 
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            line-height: 1.8;
+        }
+        .delete-btn { position: absolute; bottom: 10px; left: 10px; writing-mode: horizontal-tb; font-size: 10px; color: #ff5555; border: 1px solid #ffebeb; background: #fffafa; padding: 3px 6px; border-radius: 6px; opacity: 0.6; }
+        .delete-btn:hover { opacity: 1; background: #ff5555; color: #fff; }
+        
+        .actions { display: flex; gap: 12px; margin-top: 24px; }
+        .actions button { flex: 1; font-size: 13px; color: #666; border-color: #eee; }
+        small { display: block; margin-top: 20px; color: #bbb; text-align: center; font-size: 11px; }
+        
+        hr { border: 0; border-top: 1px solid #f0f0f0; margin: 40px 0; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
-    <div class="lang-nav">
-        <button id="l-ja" class="lang-btn active" onclick="setLang('ja')">日本語</button>
-        <button id="l-fr" class="lang-btn" onclick="setLang('fr')">français</button>
-        <button id="l-en" class="lang-btn" onclick="setLang('en')">english</button>
-    </div>
-
     <div class="card">
         <div class="top">
-            <div id="pandaTalk" class="bubble">...</div>
-            <img class="panda" id="pandaImg" src="https://45jp.net/wp-content/uploads/2020/05/warau_panda.png" alt="Panda" onclick="reactPanda()">
+            <img class="panda" src="https://45jp.net/wp-content/uploads/2020/05/warau_panda.png" alt="パンダ" onerror="this.src='https://img.icons8.com/emoji/96/000000/panda-emoji.png'">
             <div>
-                <span class="logo-text" id="ui-title">パンダ俳句 β</span><br>
-                <select id="seasonSelect" onchange="start()" style="font-size: 11px; border: 1px solid #eee; border-radius: 5px;">
-                    <option value="spring">春</option>
-                    <option value="summer">夏</option>
-                    <option value="autumn">秋</option>
-                    <option value="winter">冬</option>
-                </select>
+                <span class="logo-text">パンダ俳句 β</span><br>
+                <div class="season-selector-wrapper">
+                    <select id="seasonSelect" class="season-select" onchange="changeSeason()">
+                        <option value="spring">季節：春</option>
+                        <option value="summer">季節：夏</option>
+                        <option value="autumn">季節：秋</option>
+                        <option value="winter">季節：冬</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div id="displayArea" class="haiku-display"></div>
+        <div class="haiku-display">
+            <div id="l1" class="line dim">（初句）</div>
+            <div id="l2" class="line dim">（中句）</div>
+            <div id="l3" class="line dim">（結句）</div>
+        </div>
 
         <div id="stage1" class="controls">
-            <span class="section-title" id="ui-t1">季語を選ぶ</span>
-            <div id="opts1"></div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <span class="section-title">AIが選んだ季語（初句）</span>
+                <button class="refresh-btn" onclick="refreshFirstOptions()">↺ 他の候補を見る</button>
+            </div>
+            <div id="firstOptions"></div>
         </div>
 
         <div id="stage2" class="controls hidden">
-            <span class="section-title" id="ui-t2">中句を詠む</span>
-            <input type="text" id="inputMiddle" placeholder="...">
-            <button class="primary" onclick="toStage3()" id="ui-next">次へ</button>
+            <span class="section-title">中句（七音）を入力</span>
+            <input type="text" id="middleInput" placeholder="例：笹をむしゃむしゃ" maxlength="30">
+            <button class="primary" onclick="confirmMiddle()">結句へ進む</button>
+            <button onclick="start()" style="font-size:12px; border:none; color:#999;">← 最初からやり直す</button>
         </div>
 
         <div id="stage3" class="controls hidden">
-            <span class="section-title" id="ui-t3">結びを選ぶ</span>
-            <div id="opts3"></div>
-            <hr style="border:0; border-top:1px solid #eee; margin:10px 0; width:100%;">
-            <input type="text" id="inputLast" placeholder="...">
-            <button class="primary" onclick="finishHaiku()" id="ui-done">決定</button>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <span class="section-title">結句を選んでね</span>
+                <button class="refresh-btn" onclick="refreshLastOptions()">↺ 他の候補を見る</button>
+            </div>
+            <div id="lastOptions"></div>
+            <hr style="margin:12px 0">
+            <span class="section-title">または自分で結句を書く</span>
+            <input type="text" id="lastInput" placeholder="例：昼寝かな" maxlength="30">
+            <button class="primary" onclick="confirmLastCustom()">自分で書いた句で決定</button>
+            <button onclick="backToMiddle()" style="font-size:12px; border:none; color:#999;">← 中句を書き直す</button>
         </div>
 
-        <div id="stage4" class="score-screen hidden">
-            <span class="section-title">AIパンダ先生の採点</span>
-            <div class="score-val" id="resScore">0</div>
-            <p class="critique-text" id="resCrit">...</p>
-            <button class="primary" onclick="saveAndReset()">保存して次へ</button>
+        <div id="stage4" class="controls hidden">
+            <button class="primary" onclick="saveHaiku()">この一句をコレクションに保存</button>
+            <button onclick="start()">保存せずに新しく作る</button>
         </div>
 
         <div class="history-section">
-            <h4 id="ui-hist" style="margin: 0 0 10px 0; font-size: 14px;">作品集</h4>
+            <hr>
+            <h3>これまでの作品</h3>
             <div id="gallery" class="gallery"></div>
+            
+            <div class="actions" id="galleryActions">
+                <button onclick="copyAll()">すべてコピー</button>
+                <button onclick="downloadAll()">一括ダウンロード</button>
+            </div>
+            <small>※データはこのブラウザにのみ保存されています</small>
         </div>
     </div>
 </div>
 
 <script>
-let currentLang = 'ja';
-const KEY = "panda_haiku_v2";
-const data = {
-    ja: {
-        ui: { title: "パンダ俳句 β", t1: "季語を選ぶ", t2: "中句（七音）", t3: "結び（五音）", next: "次へ", done: "決定", hist: "最近の作品" },
-        seasons: {
-            spring: { first: ["春雷や", "花の雨", "朧月"], last: ["揺れている", "夢の中"] },
-            summer: { first: ["夏雲や", "蝉しぐれ", "夕立や"], last: ["風が来る", "また明日"] },
-            autumn: { first: ["秋風や", "虫の声", "新米や"], last: ["静かなり", "空高く"] },
-            winter: { first: ["初霜や", "冬の星", "息白し"], last: ["春を待つ", "音もなく"] }
-        },
-        critiques: ["笹を食べる手を止める名作だ。", "凡庸。竹の心を知れ。", "歴史が動いた。", "ただの寝言か？"],
-        talk: ["笹、食べる？", "竹の心...", "眠い..."]
-    },
-    fr: {
-        ui: { title: "Panda Haïkaï", t1: "Kigo", t2: "Milieu", t3: "Fin", next: "Continuer", done: "Valider", hist: "Galerie" },
-        seasons: {
-            spring: { first: ["cerisiers,", "pluie de mars —"], last: ["un rêve.", "clarté."] },
-            summer: { first: ["soleil d'été —", "cigales :"], last: ["il fait chaud.", "l'ombre."] },
-            autumn: { first: ["vent d'automne :", "lune rousse —"], last: ["feuille morte.", "arrêt."] },
-            winter: { first: ["brume d'hiver,", "neige blanche —"], last: ["silence.", "nouveau."] }
-        },
-        critiques: ["Manque de bambou.", "Élégant panda.", "Poésie de koala !", "Magnifique."],
-        talk: ["Bambou ?", "Zzz...", "Poésie !"]
-    },
-    en: {
-        ui: { title: "Panda Haiku", t1: "Kigo", t2: "Middle", t3: "End", next: "Next", done: "Done", hist: "Gallery" },
-        seasons: {
-            spring: { first: ["old pond,", "spring rain —"], last: ["water sound.", "a dream."] },
-            summer: { first: ["summer heat —", "cicadas :"], last: ["the sun sets.", "breeze."] },
-            autumn: { first: ["autumn wind :", "harvest moon —"], last: ["falling leaves.", "night."] },
-            winter: { first: ["winter moon,", "first snow —"], last: ["deep silence.", "spring."] }
-        },
-        critiques: ["Needs bamboo.", "Elegant panda.", "Is this a joke?", "Legendary!"],
-        talk: ["Bamboo?", "Nap time.", "Stay wild."]
-    }
+const seasonData = {
+    spring: { label: "春", first: ["春雷や", "花の雨", "若草や", "朧月", "風光る", "陽炎や", "さくら散る", "うららかや", "残雪や", "春の風", "雛祭り", "山笑う", "草餅や", "木の芽時", "春一番", "チューリップ"], last: ["まだ遠い", "揺れている", "黙ってる", "夢の中", "ほどけゆく", "風が舞う", "蝶ひとつ", "光りだす", "香る朝", "空の色", "雨上がり"] },
+    summer: { label: "夏", first: ["夏雲や", "蝉しぐれ", "川光る", "青嵐", "夕立や", "ほととぎす", "短夜や", "ひまわりや", "冷房や", "氷水", "薫風や", "祭笛", "草茂る", "星月夜", "金魚鉢", "打ち水や"], last: ["少し待つ", "目を閉じる", "風が来る", "無人駅", "白い壁", "水しぶき", "影ひとつ", "どこまでも", "透き通る", "また明日", "夏の果て"] },
+    autumn: { label: "秋", first: ["秋風や", "虫の声", "月高し", "鰯雲", "露の世や", "秋日和", "紅葉散る", "山装う", "天高し", "新米や", "不知火や", "秋の空", "銀杏散る", "夜長かな", "案山子かな", "秋の暮"], last: ["何も言わず", "そのままで", "歩き出す", "影が伸び", "冷えてゆく", "空高く", "どこまでも", "懐かしく", "ふと思い", "静かなり", "旅に出る"] },
+    winter: { label: "冬", first: ["初霜や", "雪しんしん", "冬の星", "枯野かな", "氷張る", "息白し", "寒月や", "山眠る", "冬ざれや", "石炭や", "焚き火かな", "冬の朝", "大雪や", "春待つ心", "湯豆腐や", "年忘れ"], last: ["朝になる", "音もなく", "消えてゆく", "灯がともる", "まだ温い", "白くなる", "凍りつく", "手の中に", "じっとして", "深く吐く", "春を待つ"] }
 };
 
-function setLang(l) {
-    currentLang = l;
-    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('l-'+l).classList.add('active');
-    const u = data[l].ui;
-    document.getElementById('ui-title').textContent = u.title;
-    document.getElementById('ui-t1').textContent = u.t1;
-    document.getElementById('ui-t2').textContent = u.t2;
-    document.getElementById('ui-t3').textContent = u.t3;
-    document.getElementById('ui-next').textContent = u.next;
-    document.getElementById('ui-done').textContent = u.done;
-    document.getElementById('ui-hist').textContent = u.hist;
-    start();
+const KEY = "panda_haiku_vfinal_data";
+let currentSeason = "";
+
+function autoDetectSeason() {
+    const month = new Date().getMonth() + 1;
+    if (month >= 3 && month <= 5) return 'spring';
+    if (month >= 6 && month <= 8) return 'summer';
+    if (month >= 9 && month <= 11) return 'autumn';
+    return 'winter';
 }
 
 function start() {
-    const season = document.getElementById("seasonSelect").value;
-    const area = document.getElementById("displayArea");
-    if(currentLang === 'ja') {
-        area.innerHTML = `<div id="l3" class="line display-ja dim">五</div><div id="l2" class="line display-ja dim">七</div><div id="l1" class="line display-ja dim">五</div>`;
-    } else {
-        area.innerHTML = `<div class="display-eu"><div id="l1" class="line dim">(5)</div><div id="l2" class="line dim">(7)</div><div id="l3" class="line dim">(5)</div></div>`;
+    // 初回のみ自動判定、それ以外は選択されている季節を維持
+    if (!currentSeason) {
+        currentSeason = autoDetectSeason();
+        document.getElementById("seasonSelect").value = currentSeason;
     }
+
+    resetHaikuDisplay();
     showStage(1);
-    const box1 = document.getElementById("opts1");
-    box1.innerHTML = "";
-    data[currentLang].seasons[season].first.forEach(txt => {
-        const btn = document.createElement("button");
-        btn.className = "opt";
-        btn.innerHTML = `<span>${txt}</span> <strong>OK</strong>`;
-        btn.onclick = () => { document.getElementById("l1").textContent = txt; document.getElementById("l1").classList.remove("dim"); showStage(2); };
-        box1.appendChild(btn);
-    });
-    renderGallery();
+    refreshFirstOptions();
 }
 
-function toStage3() {
-    const val = document.getElementById("inputMiddle").value.trim();
+function changeSeason() {
+    currentSeason = document.getElementById("seasonSelect").value;
+    // 季節を変えたら作り直し
+    resetHaikuDisplay();
+    showStage(1);
+    refreshFirstOptions();
+}
+
+function resetHaikuDisplay() {
+    document.getElementById("l1").textContent = "（初句）";
+    document.getElementById("l1").classList.add("dim");
+    document.getElementById("l2").textContent = "（中句）";
+    document.getElementById("l2").classList.add("dim");
+    document.getElementById("l3").textContent = "（結句）";
+    document.getElementById("l3").classList.add("dim");
+
+    document.getElementById("middleInput").value = "";
+    document.getElementById("lastInput").value = "";
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function refreshFirstOptions() {
+    const data = seasonData[currentSeason];
+    const box = document.getElementById("firstOptions");
+    box.innerHTML = "";
+    const options = [];
+    while(options.length < 2) {
+        const p = pick(data.first);
+        if(!options.includes(p)) options.push(p);
+    }
+
+    options.forEach(txt => {
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.innerHTML = `<span>${txt}</span> <strong>選ぶ</strong>`;
+        btn.onclick = () => {
+            document.getElementById("l1").textContent = txt;
+            document.getElementById("l1").classList.remove("dim");
+            showStage(2);
+        };
+        box.appendChild(btn);
+    });
+}
+
+function showStage(n) {
+    for(let i=1; i<=4; i++) {
+        document.getElementById(`stage${i}`).classList.add("hidden");
+    }
+    document.getElementById(`stage${n}`).classList.remove("hidden");
+}
+
+function confirmMiddle() {
+    const val = document.getElementById("middleInput").value.trim();
     if(!val) return;
     document.getElementById("l2").textContent = val;
     document.getElementById("l2").classList.remove("dim");
-    const season = document.getElementById("seasonSelect").value;
-    const box3 = document.getElementById("opts3");
-    box3.innerHTML = "";
-    data[currentLang].seasons[season].last.forEach(txt => {
-        const btn = document.createElement("button");
-        btn.className = "opt";
-        btn.innerHTML = `<span>${txt}</span> <strong>OK</strong>`;
-        btn.onclick = () => { document.getElementById("l3").textContent = txt; document.getElementById("l3").classList.remove("dim"); finishHaiku(); };
-        box3.appendChild(btn);
-    });
+    
+    refreshLastOptions();
     showStage(3);
 }
 
-function finishHaiku() {
-    const val = document.getElementById("inputLast").value.trim();
-    if(val) { document.getElementById("l3").textContent = val; document.getElementById("l3").classList.remove("dim"); }
-    const score = Math.floor(Math.random() * 81) + 20;
-    document.getElementById("resScore").textContent = score;
-    const crits = data[currentLang].critiques;
-    document.getElementById("resCrit").textContent = crits[Math.floor(Math.random()*crits.length)];
+function refreshLastOptions() {
+    const data = seasonData[currentSeason];
+    const box = document.getElementById("lastOptions");
+    box.innerHTML = "";
+    const options = [];
+    while(options.length < 3) {
+        const p = pick(data.last);
+        if(!options.includes(p)) options.push(p);
+    }
+
+    options.forEach(txt => {
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.innerHTML = `<span>${txt}</span> <strong>選ぶ</strong>`;
+        btn.onclick = () => {
+            document.getElementById("l3").textContent = txt;
+            document.getElementById("l3").classList.remove("dim");
+            showStage(4);
+        };
+        box.appendChild(btn);
+    });
+}
+
+function confirmLastCustom() {
+    const val = document.getElementById("lastInput").value.trim();
+    if(!val) return;
+    document.getElementById("l3").textContent = val;
+    document.getElementById("l3").classList.remove("dim");
     showStage(4);
 }
 
-function saveAndReset() {
-    const h = `${document.getElementById("l1").textContent} ${document.getElementById("l2").textContent} ${document.getElementById("l3").textContent}`;
-    const list = JSON.parse(localStorage.getItem(KEY) || "[]");
-    list.unshift(h);
-    localStorage.setItem(KEY, JSON.stringify(list.slice(0, 20)));
+function backToMiddle() { showStage(2); }
+
+function saveHaiku() {
+    const h1 = document.getElementById("l1").textContent;
+    const h2 = document.getElementById("l2").textContent;
+    const h3 = document.getElementById("l3").textContent;
+    const full = `${h1} ${h2} ${h3}`;
+
+    const history = JSON.parse(localStorage.getItem(KEY) || "[]");
+    history.unshift(full);
+    localStorage.setItem(KEY, JSON.stringify(history));
+
+    renderGallery();
     start();
 }
 
 function renderGallery() {
-    const g = document.getElementById("gallery");
-    const list = JSON.parse(localStorage.getItem(KEY) || "[]");
-    g.innerHTML = "";
-    list.forEach((text, i) => {
+    const gallery = document.getElementById("gallery");
+    const actions = document.getElementById("galleryActions");
+    const history = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+    gallery.innerHTML = "";
+    if(history.length === 0) {
+        gallery.innerHTML = "<p style='grid-column:1/-1; color:#ccc; text-align:center; padding:20px;'>作品はまだありません</p>";
+        actions.style.display = "none";
+        return;
+    }
+    actions.style.display = "flex";
+
+    history.forEach((text, index) => {
         const card = document.createElement("div");
         card.className = "hcard";
-        card.innerHTML = text.replace(/\s/g, '<br>') + `<button class="delete-btn" onclick="deleteH(${i})">×</button>`;
-        g.appendChild(card);
+        card.innerHTML = text.replace(/\s/g, '<br>') + 
+            `<button class="delete-btn" onclick="deleteItem(${index})">削除</button>`;
+        gallery.appendChild(card);
     });
 }
 
-function deleteH(i) {
-    const list = JSON.parse(localStorage.getItem(KEY));
-    list.splice(i, 1);
-    localStorage.setItem(KEY, JSON.stringify(list));
+function deleteItem(index) {
+    if(!confirm("この作品を削除しますか？")) return;
+    const history = JSON.parse(localStorage.getItem(KEY) || "[]");
+    history.splice(index, 1);
+    localStorage.setItem(KEY, JSON.stringify(history));
     renderGallery();
 }
 
-function showStage(n) {
-    for(let i=1; i<=4; i++) document.getElementById('stage'+i).classList.add('hidden');
-    document.getElementById('stage'+n).classList.remove('hidden');
+function copyAll() {
+    const history = JSON.parse(localStorage.getItem(KEY) || "[]");
+    if(!history.length) return;
+    navigator.clipboard.writeText(history.join("\n")).then(() => {
+        alert("コピーしました！");
+    });
 }
 
-function reactPanda() {
-    const b = document.getElementById("pandaTalk");
-    b.textContent = data[currentLang].talk[Math.floor(Math.random()*3)];
-    b.classList.add("show");
-    setTimeout(() => b.classList.remove("show"), 2000);
+function downloadAll() {
+    const history = JSON.parse(localStorage.getItem(KEY) || "[]");
+    if(!history.length) return;
+    const blob = new Blob(["【パンダ俳句 作品集】\n\n" + history.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "my_panda_haiku.txt";
+    a.click();
 }
 
-setLang('ja');
+renderGallery();
+start();
 </script>
 </body>
 </html>
-
